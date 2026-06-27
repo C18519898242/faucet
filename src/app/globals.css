@@ -42,11 +42,28 @@ input {
   gap: 8px;
 }
 
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .eyebrow {
   margin: 0;
   color: #3157a4;
   font-size: 14px;
   font-weight: 700;
+}
+
+.app-version {
+  border: 1px solid #d7deea;
+  border-radius: 999px;
+  color: #596170;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 5px 8px;
 }
 
 h1 {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import packageJson from "../../package.json";
 
 type Token = "USDT" | "USDC";
 
@@ -58,7 +59,10 @@ export default function HomePage() {
     <main className="shell">
       <section className="panel faucet-panel">
         <div className="header">
-          <p className="eyebrow">Sepolia Faucet</p>
+          <div className="title-row">
+            <p className="eyebrow">Sepolia Faucet</p>
+            <span className="app-version">v{packageJson.version}</span>
+          </div>
           <h1>测试币接水</h1>
           <p className="muted">每个钱包每个币种每天可领取一次，单次固定 10,000。</p>
         </div>

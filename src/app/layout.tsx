@@ -3,7 +3,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Sepolia Faucet",
-  description: "Internal test token faucet for Sepolia USDT and USDC"
+  description: "Internal test token faucet for Sepolia USDT and USDC",
+  icons: {
+    icon: "/favicon.svg"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

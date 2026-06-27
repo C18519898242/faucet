@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import packageJson from "../../package.json";
 import HomePage from "./page";
 
 describe("HomePage", () => {
@@ -37,6 +38,12 @@ describe("HomePage", () => {
       "href",
       "https://sepolia.etherscan.io/tx/0xtx"
     );
+  });
+
+  it("shows the current app version", () => {
+    render(<HomePage />);
+
+    expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
   });
 
   it("can select USDC", async () => {
