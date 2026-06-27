@@ -56,6 +56,30 @@ SQLite 数据保存在宿主机：
 
 升级或重建容器时保留 `data` 目录，领取记录就不会丢。
 
+## 手动部署/更新
+
+在服务器执行：
+
+```bash
+cd /home/ubuntu/faucet && ./deploy.sh
+```
+
+`deploy.sh` 会拉取 GitHub 最新代码、备份 SQLite 数据库、重建 Docker 容器，并检查：
+
+```text
+http://localhost:3000
+```
+
+如果脚本提示工作区有未提交改动，先执行：
+
+```bash
+git status
+```
+
+查看原因并处理后再重新部署。
+
+`data/faucet.sqlite` 是领取记录数据库，不要删除 `data` 目录。
+
 ## 安全提醒
 
 - 不要提交 `.env`。
