@@ -1,15 +1,16 @@
 import type { ChainAdapter } from "@/lib/chain-adapter";
 import type { ClaimRecord, ClaimsRepository, CreateClaimInput } from "@/lib/claims-repository";
-import type { TokenConfig, TokenSymbol } from "@/lib/tokens";
+import type { NetworkId, TokenConfig, TokenSymbol } from "@/lib/tokens";
 
 export class FakeClaimsRepository implements ClaimsRepository {
   records: ClaimRecord[] = [];
   nextId = 1;
 
-  findActiveClaim(wallet: string, token: TokenSymbol, claimDate: string): ClaimRecord | undefined {
+  findActiveClaim(wallet: string, network: NetworkId, token: TokenSymbol, claimDate: string): ClaimRecord | undefined {
     return this.records.find(
       (record) =>
         record.wallet === wallet &&
+        record.network === network &&
         record.token === token &&
         record.claimDate === claimDate &&
         (record.status === "pending" || record.status === "sent")
@@ -21,6 +22,7 @@ export class FakeClaimsRepository implements ClaimsRepository {
     const record: ClaimRecord = {
       id: this.nextId++,
       wallet: input.wallet,
+      network: input.network,
       token: input.token,
       amount: input.amount,
       claimDate: input.claimDate,
@@ -51,25 +53,32 @@ export class FakeClaimsRepository implements ClaimsRepository {
 
 export class FakeChainAdapter implements ChainAdapter {
   balance = 10000000000n;
-  txHash = "0xtx";
   transferError: Error | undefined;
+  transfers: Array<{ token: TokenConfig; to: string; amount: string }> = [];
+
+  constructor(
+    readonly network: NetworkId,
+    readonly txHash = "0xtx",
+    private readonly explorerPrefix = "https://sepolia.etherscan.io/tx/"
+  ) {}
 
   validateAddress(address: string): boolean {
-    return address.startsWith("0x");
+    return this.network === "tron" ? address.startsWith("T") : address.startsWith("0x");
   }
 
   async getTokenBalance(_token: TokenConfig): Promise<bigint> {
     return this.balance;
   }
 
-  async transferToken(_token: TokenConfig, _to: string, _amount: string): Promise<string> {
+  async transferToken(token: TokenConfig, to: string, amount: string): Promise<string> {
     if (this.transferError) {
       throw this.transferError;
     }
+    this.transfers.push({ token, to, amount });
     return this.txHash;
   }
 
   getExplorerTxUrl(txHash: string): string {
-    return `https://sepolia.etherscan.io/tx/${txHash}`;
+    return `${this.explorerPrefix}${txHash}`;
   }
 }
