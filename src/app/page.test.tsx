@@ -24,7 +24,7 @@ describe("HomePage", () => {
     await userEvent.type(screen.getByLabelText("接收钱包地址"), "0x000000000000000000000000000000000000dEaD");
     await userEvent.click(screen.getByRole("button", { name: "领取测试币" }));
 
-    expect(fetchMock).toHaveBeenCalledWith("/api/claim", {
+    expect(fetchMock).toHaveBeenCalledWith("./api/claim", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -94,7 +94,7 @@ describe("HomePage", () => {
     await userEvent.click(screen.getByRole("button", { name: "领取测试币" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "/api/claim",
+      "./api/claim",
       expect.objectContaining({
         body: JSON.stringify({
           network: "tron",
