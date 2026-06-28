@@ -72,7 +72,7 @@ export default function HomePage() {
     setResult(undefined);
 
     try {
-      const response = await fetch("/api/claim", {
+      const response = await fetch("./api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ network, wallet: trimmedWallet, token, amount: claimAmount })
