@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getSupportedTokens, NETWORKS, type NetworkId, type TokenSymbol } from "@/lib/tokens";
 import packageJson from "../../package.json";
-
-type Token = "USDT" | "USDC";
 
 type ClaimResponse =
   | { status: "sent"; txHash: string; explorerUrl: string }
@@ -12,20 +11,35 @@ type ClaimResponse =
 
 const reasonText: Record<string, string> = {
   invalid_wallet: "钱包地址格式不正确",
+  unsupported_network: "不支持的网络",
   unsupported_token: "不支持的币种",
   invalid_amount: "领取数量不正确",
   amount_too_large: "领取数量超过上限",
-  already_claimed_today: "该钱包今天已经领取过这个币种",
+  already_claimed_today: "该钱包今天已经领取过这个网络的这个币种",
   insufficient_faucet_balance: "Faucet 钱包余额不足",
   invalid_request: "请求格式不正确",
   transfer_failed: "交易提交失败，请稍后再试"
 };
 
+const explorerText: Record<NetworkId, string> = {
+  sepolia: "查看 Sepolia 交易",
+  tron: "查看 TRON 交易"
+};
+
 export default function HomePage() {
   const [wallet, setWallet] = useState("");
-  const [token, setToken] = useState<Token>("USDT");
+  const [network, setNetwork] = useState<NetworkId>("sepolia");
+  const [token, setToken] = useState<TokenSymbol>("USDT");
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
   const [result, setResult] = useState<ClaimResponse | undefined>();
+
+  const supportedTokens = useMemo(() => getSupportedTokens(network), [network]);
+
+  useEffect(() => {
+    if (!supportedTokens.includes(token)) {
+      setToken(supportedTokens[0]);
+    }
+  }, [supportedTokens, token]);
 
   async function submitClaim(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -44,7 +58,7 @@ export default function HomePage() {
       const response = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wallet: trimmedWallet, token, amount: "10000" })
+        body: JSON.stringify({ network, wallet: trimmedWallet, token, amount: "10000" })
       });
       const data = (await response.json()) as ClaimResponse;
       setResult(data);
@@ -60,46 +74,54 @@ export default function HomePage() {
       <section className="panel faucet-panel">
         <div className="header">
           <div className="title-row">
-            <p className="eyebrow">Sepolia Faucet</p>
+            <p className="eyebrow">Sepolia / TRON Shasta Faucet</p>
             <span className="app-version">v{packageJson.version}</span>
           </div>
           <h1>测试币接水</h1>
-          <p className="muted">每个钱包每个币种每天可领取一次，单次固定 10,000。</p>
+          <p className="muted">同一个钱包、同一个网络、同一个币种，每天最多领取一次，单次固定 10,000。</p>
         </div>
 
         <form className="form" onSubmit={submitClaim}>
+          <fieldset className="option-group">
+            <legend>选择网络</legend>
+            {(Object.keys(NETWORKS) as NetworkId[]).map((networkId) => (
+              <label key={networkId} className={network === networkId ? "option selected" : "option"}>
+                <input
+                  type="radio"
+                  name="network"
+                  value={networkId}
+                  checked={network === networkId}
+                  onChange={() => setNetwork(networkId)}
+                />
+                {NETWORKS[networkId].label}
+              </label>
+            ))}
+          </fieldset>
+
           <label className="field">
             <span>接收钱包地址</span>
             <input
               value={wallet}
               onChange={(event) => setWallet(event.target.value)}
-              placeholder="0x..."
+              placeholder={network === "tron" ? "T..." : "0x..."}
               autoComplete="off"
             />
           </label>
 
-          <fieldset className="token-group">
+          <fieldset className="option-group">
             <legend>选择币种</legend>
-            <label className={token === "USDT" ? "token-option selected" : "token-option"}>
-              <input
-                type="radio"
-                name="token"
-                value="USDT"
-                checked={token === "USDT"}
-                onChange={() => setToken("USDT")}
-              />
-              USDT
-            </label>
-            <label className={token === "USDC" ? "token-option selected" : "token-option"}>
-              <input
-                type="radio"
-                name="token"
-                value="USDC"
-                checked={token === "USDC"}
-                onChange={() => setToken("USDC")}
-              />
-              USDC
-            </label>
+            {supportedTokens.map((tokenSymbol) => (
+              <label key={tokenSymbol} className={token === tokenSymbol ? "option selected" : "option"}>
+                <input
+                  type="radio"
+                  name="token"
+                  value={tokenSymbol}
+                  checked={token === tokenSymbol}
+                  onChange={() => setToken(tokenSymbol)}
+                />
+                {tokenSymbol}
+              </label>
+            ))}
           </fieldset>
 
           <div className="amount-row">
@@ -118,7 +140,7 @@ export default function HomePage() {
               <>
                 <strong>交易已发送</strong>
                 <a href={result.explorerUrl} target="_blank" rel="noreferrer">
-                  查看 Sepolia 交易
+                  {explorerText[network]}
                 </a>
               </>
             ) : (
