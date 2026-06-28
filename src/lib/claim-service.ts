@@ -66,9 +66,30 @@ export class ClaimService {
         txHash,
         explorerUrl: chain.getExplorerTxUrl(txHash)
       };
-    } catch {
+    } catch (error) {
+      logTransferFailure({ network, token, error });
       this.claims.markFailed(claim.id, "transfer_failed");
       return { status: "failed", reason: "transfer_failed" };
     }
   }
+}
+
+function logTransferFailure(input: { network: NetworkId; token: string; error: unknown }): void {
+  if (process.env.NODE_ENV === "test") {
+    return;
+  }
+
+  console.error("Claim transfer failed", {
+    network: input.network,
+    token: input.token,
+    error: sanitizeError(input.error)
+  });
+}
+
+function sanitizeError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message
+    .replace(/0x[a-fA-F0-9]{32,}/g, "0x[redacted]")
+    .replace(/[A-HJ-NP-Za-km-z1-9]{34,}/g, "[redacted-address-like-value]")
+    .slice(0, 500);
 }

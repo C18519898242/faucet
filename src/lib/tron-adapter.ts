@@ -25,8 +25,10 @@ const TRC20_ABI = [
 
 type TronContract = {
   balanceOf(owner: string): { call(): Promise<string | number | bigint> };
-  transfer(to: string, amount: string): { send(): Promise<string> };
+  transfer(to: string, amount: string): { send(options?: { feeLimit?: number }): Promise<string> };
 };
+
+const TRC20_TRANSFER_FEE_LIMIT = 150_000_000;
 
 type TronWebLike = {
   address: {
@@ -63,7 +65,7 @@ export class TronAdapter implements ChainAdapter {
   async transferToken(token: TokenConfig, to: string, amount: string): Promise<string> {
     const contract = await this.tronWeb.contract(TRC20_ABI, token.address);
     const amountInBaseUnits = parseUnits(amount, token.decimals).toString();
-    return contract.transfer(to, amountInBaseUnits).send();
+    return contract.transfer(to, amountInBaseUnits).send({ feeLimit: TRC20_TRANSFER_FEE_LIMIT });
   }
 
   getExplorerTxUrl(txHash: string): string {

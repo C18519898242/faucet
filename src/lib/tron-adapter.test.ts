@@ -6,7 +6,7 @@ const token = NETWORKS.tron.tokens.USDT;
 
 type FakeContract = {
   balanceOf(owner: string): { call(): Promise<string> };
-  transfer(to: string, amount: string): { send(): Promise<string> };
+  transfer(to: string, amount: string): { send(options?: { feeLimit?: number }): Promise<string> };
 };
 
 function createAdapter(contract: FakeContract) {
@@ -56,7 +56,12 @@ describe("TronAdapter", () => {
       transfer: (to: string, amount: string) => {
         expect(to).toBe("TReceiverAddress");
         expect(amount).toBe("10000000000");
-        return { send: async () => "trontx" };
+        return {
+          send: async (options?: { feeLimit?: number }) => {
+            expect(options).toEqual({ feeLimit: 150_000_000 });
+            return "trontx";
+          }
+        };
       }
     });
 
