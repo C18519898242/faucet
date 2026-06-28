@@ -26,6 +26,11 @@ const explorerText: Record<NetworkId, string> = {
   tron: "查看 TRON 交易"
 };
 
+const tokenIcons: Record<TokenSymbol, { mark: string; className: string }> = {
+  USDT: { mark: "T", className: "token-icon-usdt" },
+  USDC: { mark: "$", className: "token-icon-usdc" }
+};
+
 const thirdPartyFaucets = [
   { name: "Alchemy", url: "https://www.alchemy.com/faucets/ethereum-sepolia" },
   { name: "Bitcoin testnet3", url: "https://coinfaucet.eu/en/btc-testnet/" },
@@ -51,6 +56,7 @@ export default function HomePage() {
   const supportedTokens = useMemo(() => getSupportedTokens(network), [network]);
   const claimAmount = NETWORKS[network].tokens[token]?.maxClaimAmount ?? "1000";
   const claimAmountLabel = formatAmountLabel(claimAmount);
+  const activeNetwork = NETWORKS[network];
 
   useEffect(() => {
     if (!supportedTokens.includes(token)) {
@@ -88,98 +94,138 @@ export default function HomePage() {
 
   return (
     <main className="shell">
-      <section className="panel faucet-panel">
-        <div className="header">
-          <div className="title-row">
-            <p className="eyebrow">Sepolia / TRON Shasta Faucet</p>
+      <div className="workspace" aria-label="测试币领取工作台">
+        <section className="console-brief" aria-labelledby="page-title">
+          <div className="topline">
+            <span className="system-label">内部 Faucet 控制台</span>
             <span className="app-version">v{packageJson.version}</span>
           </div>
-          <h1>测试币接水</h1>
-          <p className="muted">同一个钱包、同一个网络、同一个币种，每天最多领取一次，单次固定 {claimAmountLabel}。</p>
-        </div>
 
-        <form className="form" onSubmit={submitClaim}>
-          <fieldset className="option-group">
-            <legend>选择网络</legend>
-            {(Object.keys(NETWORKS) as NetworkId[]).map((networkId) => (
-              <label key={networkId} className={network === networkId ? "option selected" : "option"}>
-                <input
-                  type="radio"
-                  name="network"
-                  value={networkId}
-                  checked={network === networkId}
-                  onChange={() => setNetwork(networkId)}
-                />
-                {NETWORKS[networkId].label}
-              </label>
-            ))}
-          </fieldset>
-
-          <label className="field">
-            <span>接收钱包地址</span>
-            <input
-              value={wallet}
-              onChange={(event) => setWallet(event.target.value)}
-              placeholder={network === "tron" ? "T..." : "0x..."}
-              autoComplete="off"
-            />
-          </label>
-
-          <fieldset className="option-group">
-            <legend>选择币种</legend>
-            {supportedTokens.map((tokenSymbol) => (
-              <label key={tokenSymbol} className={token === tokenSymbol ? "option selected" : "option"}>
-                <input
-                  type="radio"
-                  name="token"
-                  value={tokenSymbol}
-                  checked={token === tokenSymbol}
-                  onChange={() => setToken(tokenSymbol)}
-                />
-                {tokenSymbol}
-              </label>
-            ))}
-          </fieldset>
-
-          <div className="amount-row">
-            <span>领取数量</span>
-            <strong>{claimAmountLabel}</strong>
+          <div className="hero-copy">
+            <p className="eyebrow">Sepolia / TRON Shasta</p>
+            <h1 id="page-title">测试币领取台</h1>
+            <p className="lead">
+              为开发和测试环境发放测试币。按钱包、网络和币种限制每日一次，单次固定 {claimAmountLabel}。
+            </p>
           </div>
 
-          <button className="claim-button" type="submit" disabled={status === "submitting"}>
-            {status === "submitting" ? "提交中" : "领取测试币"}
-          </button>
-        </form>
+          <dl className="status-grid" aria-label="当前领取规则">
+            <div>
+              <dt>当前网络</dt>
+              <dd>{activeNetwork.label}</dd>
+            </div>
+            <div>
+              <dt>可领币种</dt>
+              <dd>{supportedTokens.join(" / ")}</dd>
+            </div>
+            <div>
+              <dt>领取频率</dt>
+              <dd>每日一次</dd>
+            </div>
+            <div>
+              <dt>单次数量</dt>
+              <dd>{claimAmountLabel}</dd>
+            </div>
+          </dl>
 
-        <section className="external-faucets" aria-labelledby="external-faucets-title">
-          <div className="external-faucets-header">
-            <h2 id="external-faucets-title">第三方公用水龙头</h2>
-            <p>当前水龙头不可用时，可以试试这些公开入口。</p>
-          </div>
-          <div className="external-faucet-list">
-            {thirdPartyFaucets.map((faucet) => (
-              <a key={faucet.url} href={faucet.url} target="_blank" rel="noreferrer">
-                {faucet.name}
-              </a>
-            ))}
-          </div>
+          <section className="external-faucets" aria-labelledby="external-faucets-title">
+            <div className="section-header">
+              <h2 id="external-faucets-title">第三方公共 Faucet</h2>
+              <p>当前 Faucet 不可用时，可以切换到这些公开入口。</p>
+            </div>
+            <div className="external-faucet-list">
+              {thirdPartyFaucets.map((faucet) => (
+                <a key={faucet.url} href={faucet.url} target="_blank" rel="noreferrer">
+                  {faucet.name}
+                </a>
+              ))}
+            </div>
+          </section>
         </section>
 
-        {result && (
-          <div className={result.status === "sent" ? "notice success" : "notice error"}>
-            {result.status === "sent" ? (
-              <>
-                <strong>交易已发送</strong>
-                <a href={result.explorerUrl} target="_blank" rel="noreferrer">
-                  {explorerText[network]}
-                </a>
-              </>
-            ) : (
-              <strong>{reasonText[result.reason] ?? "请求失败，请稍后再试"}</strong>
-            )}
+        <section className="claim-card" aria-labelledby="claim-title">
+          <div className="section-header">
+            <p className="eyebrow">Claim Request</p>
+            <h2 id="claim-title">发起领取</h2>
+            <p>选择网络和币种后，输入接收钱包地址。</p>
           </div>
-        )}
-      </section>
+
+          <form className="form" onSubmit={submitClaim}>
+            <fieldset className="option-group">
+              <legend>选择网络</legend>
+              {(Object.keys(NETWORKS) as NetworkId[]).map((networkId) => (
+                <label key={networkId} className={network === networkId ? "option selected" : "option"}>
+                  <input
+                    type="radio"
+                    name="network"
+                    value={networkId}
+                    checked={network === networkId}
+                    onChange={() => setNetwork(networkId)}
+                  />
+                  <span>{NETWORKS[networkId].label}</span>
+                </label>
+              ))}
+            </fieldset>
+
+            <label className="field">
+              <span>接收钱包地址</span>
+              <input
+                value={wallet}
+                onChange={(event) => setWallet(event.target.value)}
+                placeholder={network === "tron" ? "T..." : "0x..."}
+                autoComplete="off"
+              />
+            </label>
+
+            <fieldset className="option-group">
+              <legend>选择币种</legend>
+              {supportedTokens.map((tokenSymbol) => (
+                <label key={tokenSymbol} className={token === tokenSymbol ? "option selected" : "option"}>
+                  <input
+                    type="radio"
+                    name="token"
+                    value={tokenSymbol}
+                    checked={token === tokenSymbol}
+                    onChange={() => setToken(tokenSymbol)}
+                  />
+                  <span
+                    className={`token-icon ${tokenIcons[tokenSymbol].className}`}
+                    data-testid={`${tokenSymbol.toLowerCase()}-token-icon`}
+                    aria-hidden="true"
+                  >
+                    {tokenIcons[tokenSymbol].mark}
+                  </span>
+                  <span>{tokenSymbol}</span>
+                </label>
+              ))}
+            </fieldset>
+
+            <div className="amount-row">
+              <span>领取数量</span>
+              <strong>{claimAmountLabel}</strong>
+            </div>
+
+            <button className="claim-button" type="submit" disabled={status === "submitting"}>
+              {status === "submitting" ? "提交中" : "领取测试币"}
+            </button>
+          </form>
+
+          {result && (
+            <div className={result.status === "sent" ? "notice success" : "notice error"} aria-live="polite">
+              {result.status === "sent" ? (
+                <>
+                  <strong>交易已发送</strong>
+                  <a href={result.explorerUrl} target="_blank" rel="noreferrer">
+                    {explorerText[network]}
+                  </a>
+                </>
+              ) : (
+                <strong>{reasonText[result.reason] ?? "请求失败，请稍后再试"}</strong>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

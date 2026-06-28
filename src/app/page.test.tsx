@@ -41,9 +41,11 @@ describe("HomePage", () => {
     );
   });
 
-  it("shows the current app version", () => {
+  it("shows the internal console heading and current app version", () => {
     render(<HomePage />);
 
+    expect(screen.getByRole("heading", { name: "测试币领取台" })).toBeInTheDocument();
+    expect(screen.getByText("内部 Faucet 控制台")).toBeInTheDocument();
     expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
   });
 
@@ -52,8 +54,10 @@ describe("HomePage", () => {
 
     expect(screen.getByLabelText("Sepolia")).toBeChecked();
     expect(screen.getByLabelText("TRON Shasta")).toBeInTheDocument();
-    expect(screen.getByLabelText("USDT")).toBeInTheDocument();
-    expect(screen.getByLabelText("USDC")).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "USDT" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "USDC" })).toBeInTheDocument();
+    expect(screen.getByTestId("usdt-token-icon")).toBeInTheDocument();
+    expect(screen.getByTestId("usdc-token-icon")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("0x...")).toBeInTheDocument();
   });
 
@@ -62,19 +66,19 @@ describe("HomePage", () => {
 
     await userEvent.click(screen.getByLabelText("TRON Shasta"));
 
-    expect(screen.getByLabelText("USDT")).toBeChecked();
-    expect(screen.queryByLabelText("USDC")).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "USDT" })).toBeChecked();
+    expect(screen.queryByRole("radio", { name: "USDC" })).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("T...")).toBeInTheDocument();
   });
 
   it("resets USDC to USDT when switching from Sepolia to TRON Shasta", async () => {
     render(<HomePage />);
 
-    await userEvent.click(screen.getByLabelText("USDC"));
+    await userEvent.click(screen.getByRole("radio", { name: "USDC" }));
     await userEvent.click(screen.getByLabelText("TRON Shasta"));
 
-    expect(screen.getByLabelText("USDT")).toBeChecked();
-    expect(screen.queryByLabelText("USDC")).not.toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "USDT" })).toBeChecked();
+    expect(screen.queryByRole("radio", { name: "USDC" })).not.toBeInTheDocument();
   });
 
   it("submits a TRON USDT claim and shows TRON tx link", async () => {
@@ -140,7 +144,7 @@ describe("HomePage", () => {
   it("shows third-party public faucet links from the bookmark folder", () => {
     render(<HomePage />);
 
-    expect(screen.getByRole("heading", { name: "第三方公用水龙头" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "第三方公共 Faucet" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Alchemy" })).toHaveAttribute(
       "href",
       "https://www.alchemy.com/faucets/ethereum-sepolia"
