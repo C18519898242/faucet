@@ -22,6 +22,7 @@ export function migrateDatabase(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS claims (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       wallet TEXT NOT NULL,
+      network TEXT NOT NULL DEFAULT 'sepolia',
       token TEXT NOT NULL,
       amount TEXT NOT NULL,
       claim_date TEXT NOT NULL,
@@ -30,10 +31,43 @@ export function migrateDatabase(db: Database.Database): void {
       error_message TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      UNIQUE(wallet, token, claim_date)
+      UNIQUE(wallet, network, token, claim_date)
     );
+  `);
 
-    CREATE INDEX IF NOT EXISTS idx_claims_wallet_token_date
-      ON claims(wallet, token, claim_date);
+  const columns = db.prepare("PRAGMA table_info(claims)").all() as Array<{ name: string }>;
+  const hasNetwork = columns.some((column) => column.name === "network");
+
+  if (!hasNetwork) {
+    db.exec(`
+      CREATE TABLE claims_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wallet TEXT NOT NULL,
+        network TEXT NOT NULL,
+        token TEXT NOT NULL,
+        amount TEXT NOT NULL,
+        claim_date TEXT NOT NULL,
+        status TEXT NOT NULL,
+        tx_hash TEXT,
+        error_message TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(wallet, network, token, claim_date)
+      );
+
+      INSERT INTO claims_new (
+        id, wallet, network, token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+      )
+      SELECT id, wallet, 'sepolia', token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+      FROM claims;
+
+      DROP TABLE claims;
+      ALTER TABLE claims_new RENAME TO claims;
+    `);
+  }
+
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_claims_wallet_network_token_date
+      ON claims(wallet, network, token, claim_date);
   `);
 }
