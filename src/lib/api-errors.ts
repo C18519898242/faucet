@@ -11,6 +11,7 @@ export function statusCodeForClaimResult(result: ClaimResult): number {
 
   switch (result.reason) {
     case "invalid_wallet":
+    case "unsupported_network":
     case "unsupported_token":
     case "invalid_amount":
     case "amount_too_large":
