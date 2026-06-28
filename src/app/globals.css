@@ -100,7 +100,7 @@ h1 {
   outline: 3px solid rgba(49, 87, 164, 0.14);
 }
 
-.token-group {
+.option-group {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
@@ -109,13 +109,13 @@ h1 {
   border: 0;
 }
 
-.token-group legend {
+.option-group legend {
   grid-column: 1 / -1;
   margin-bottom: 8px;
   font-weight: 700;
 }
 
-.token-option {
+.option {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -125,7 +125,7 @@ h1 {
   cursor: pointer;
 }
 
-.token-option.selected {
+.option.selected {
   border-color: #3157a4;
   background: #eef4ff;
 }
@@ -186,7 +186,7 @@ h1 {
     padding: 22px;
   }
 
-  .token-group {
+  .option-group {
     grid-template-columns: 1fr;
   }
 

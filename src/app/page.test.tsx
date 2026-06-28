@@ -9,7 +9,7 @@ describe("HomePage", () => {
     vi.unstubAllGlobals();
   });
 
-  it("submits a USDT claim and shows tx link", async () => {
+  it("submits a Sepolia USDT claim and shows Sepolia tx link", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -28,9 +28,10 @@ describe("HomePage", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        network: "sepolia",
         wallet: "0x000000000000000000000000000000000000dEaD",
         token: "USDT",
-        amount: "10000"
+        amount: "1000"
       })
     });
     expect(await screen.findByText("交易已发送")).toBeInTheDocument();
@@ -46,31 +47,66 @@ describe("HomePage", () => {
     expect(screen.getByText(`v${packageJson.version}`)).toBeInTheDocument();
   });
 
-  it("can select USDC", async () => {
+  it("shows network choices and Sepolia tokens by default", () => {
+    render(<HomePage />);
+
+    expect(screen.getByLabelText("Sepolia")).toBeChecked();
+    expect(screen.getByLabelText("TRON Shasta")).toBeInTheDocument();
+    expect(screen.getByLabelText("USDT")).toBeInTheDocument();
+    expect(screen.getByLabelText("USDC")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("0x...")).toBeInTheDocument();
+  });
+
+  it("shows only USDT and a TRON placeholder after selecting TRON Shasta", async () => {
+    render(<HomePage />);
+
+    await userEvent.click(screen.getByLabelText("TRON Shasta"));
+
+    expect(screen.getByLabelText("USDT")).toBeChecked();
+    expect(screen.queryByLabelText("USDC")).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText("T...")).toBeInTheDocument();
+  });
+
+  it("resets USDC to USDT when switching from Sepolia to TRON Shasta", async () => {
+    render(<HomePage />);
+
+    await userEvent.click(screen.getByLabelText("USDC"));
+    await userEvent.click(screen.getByLabelText("TRON Shasta"));
+
+    expect(screen.getByLabelText("USDT")).toBeChecked();
+    expect(screen.queryByLabelText("USDC")).not.toBeInTheDocument();
+  });
+
+  it("submits a TRON USDT claim and shows TRON tx link", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
         status: "sent",
-        txHash: "0xtx",
-        explorerUrl: "https://sepolia.etherscan.io/tx/0xtx"
+        txHash: "trontx",
+        explorerUrl: "https://shasta.tronscan.org/#/transaction/trontx"
       })
     });
     vi.stubGlobal("fetch", fetchMock);
 
     render(<HomePage />);
-    await userEvent.type(screen.getByLabelText("接收钱包地址"), "0x000000000000000000000000000000000000dEaD");
-    await userEvent.click(screen.getByLabelText("USDC"));
+    await userEvent.click(screen.getByLabelText("TRON Shasta"));
+    await userEvent.type(screen.getByLabelText("接收钱包地址"), "TQ6F4gJ72G4qDTKtpGDGppGAMUeGqwsDEu");
     await userEvent.click(screen.getByRole("button", { name: "领取测试币" }));
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/claim",
       expect.objectContaining({
         body: JSON.stringify({
-          wallet: "0x000000000000000000000000000000000000dEaD",
-          token: "USDC",
-          amount: "10000"
+          network: "tron",
+          wallet: "TQ6F4gJ72G4qDTKtpGDGppGAMUeGqwsDEu",
+          token: "USDT",
+          amount: "1000"
         })
       })
+    );
+    expect(await screen.findByRole("link", { name: "查看 TRON 交易" })).toHaveAttribute(
+      "href",
+      "https://shasta.tronscan.org/#/transaction/trontx"
     );
   });
 
@@ -87,7 +123,7 @@ describe("HomePage", () => {
     await userEvent.type(screen.getByLabelText("接收钱包地址"), "0x000000000000000000000000000000000000dEaD");
     await userEvent.click(screen.getByRole("button", { name: "领取测试币" }));
 
-    expect(await screen.findByText("该钱包今天已经领取过这个币种")).toBeInTheDocument();
+    expect(await screen.findByText("该钱包今天已经领取过这个网络的这个币种")).toBeInTheDocument();
   });
 
   it("shows a visible error when wallet is empty", async () => {

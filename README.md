@@ -1,15 +1,18 @@
-# Sepolia Faucet
+# Sepolia / TRON Shasta Faucet
 
-公司内部 Sepolia 测试币接水工具，支持测试 USDT 和 USDC。
+公司内部测试币 Faucet，支持 Sepolia USDT、Sepolia USDC 和 TRON Shasta USDT。
 
 ## 领取规则
 
-- 用户输入一个接收钱包地址。
-- 用户每次选择一个币种：USDT 或 USDC。
-- 同一个钱包每天可以领取一次 USDT。
-- 同一个钱包每天可以领取一次 USDC。
-- 每次固定发放 10,000 个测试币。
-- Faucet 使用后端钱包调用 ERC20 `transfer`，不需要 mint 权限。
+- 用户先选择网络：`Sepolia` 或 `TRON Shasta`。
+- 用户再选择该网络支持的币种。
+- Sepolia 支持 `USDT` 和 `USDC`。
+- TRON Shasta 支持 `USDT`。
+- UI 和 API 使用 `USDT`，不使用 `TRON_USDT`。
+- 系统通过 `network + token` 区分资产。
+- 同一个钱包每天每个 `network + token` 只能领取一次。
+- 每次固定发放 `1,000` 测试币。
+- Faucet 转账使用后端钱包；浏览器永远不会拿到私钥。
 
 ## 本地开发
 
@@ -19,11 +22,12 @@ cp .env.example .env
 npm run dev
 ```
 
-在 `.env` 中配置：
+配置 `.env`：
 
 ```bash
-SEPOLIA_RPC_URL=
-FAUCET_PRIVATE_KEY=
+SEPOLIA_RPC_URL=https://your-sepolia-rpc
+TRON_RPC_URL=https://api.shasta.trongrid.io
+FAUCET_PRIVATE_KEY=0xyour_private_key
 DATABASE_URL=file:./data/faucet.sqlite
 ```
 
@@ -39,6 +43,7 @@ http://localhost:3000
 
 ```bash
 SEPOLIA_RPC_URL=https://your-sepolia-rpc
+TRON_RPC_URL=https://api.shasta.trongrid.io
 FAUCET_PRIVATE_KEY=0xyour_private_key
 ```
 
@@ -54,9 +59,22 @@ SQLite 数据保存在宿主机：
 ./data/faucet.sqlite
 ```
 
-升级或重建容器时保留 `data` 目录，领取记录就不会丢。
+升级或重建容器时保留 `data` 目录。
 
-## 手动部署/更新
+## TRON Shasta 资金要求
+
+由 `FAUCET_PRIVATE_KEY` 派生出的后端钱包需要：
+
+- 用于支付手续费的 Shasta TRX。
+- 合约 `TQ6F4gJ72G4qDTKtpGDGppGAMUeGqwsDEu` 中的 Shasta USDT。
+
+TRON 交易链接格式：
+
+```text
+https://shasta.tronscan.org/#/transaction/{txHash}
+```
+
+## 手动部署 / 更新
 
 在服务器执行：
 
@@ -64,27 +82,25 @@ SQLite 数据保存在宿主机：
 cd /home/ubuntu/faucet && ./deploy.sh
 ```
 
-`deploy.sh` 会拉取 GitHub 最新代码、备份 SQLite 数据库、重建 Docker 容器，并检查：
+脚本会拉取 GitHub 最新代码、备份 SQLite 数据、重建 Docker，并检查：
 
 ```text
 http://localhost:3000
 ```
 
-如果脚本提示工作区有未提交改动，先执行：
+如果脚本提示工作区有未提交改动，先运行：
 
 ```bash
 git status
 ```
 
-查看原因并处理后再重新部署。
-
-`data/faucet.sqlite` 是领取记录数据库，不要删除 `data` 目录。
+确认改动原因后再重新部署。
 
 ## 安全提醒
 
 - 不要提交 `.env`。
 - 不要把 `FAUCET_PRIVATE_KEY` 写进前端代码。
-- 不要在日志或 API 错误里输出私钥。
-- Faucet 钱包需要准备 Sepolia ETH 用于 gas。
-- Faucet 钱包需要提前持有测试 USDT 和 USDC。
-
+- 不要在日志或 API 错误中输出私钥。
+- 不要向客户端返回原始 RPC、TronWeb 或 provider 错误。
+- Faucet 钱包需要 Sepolia ETH 作为 gas，并持有 Sepolia USDT/USDC。
+- Faucet 钱包需要 Shasta TRX 作为 gas，并持有 Shasta USDT。
