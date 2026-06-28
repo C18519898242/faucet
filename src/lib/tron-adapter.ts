@@ -9,6 +9,7 @@ const TRC20_ABI = [
     inputs: [{ name: "owner", type: "address" }],
     name: "balanceOf",
     outputs: [{ name: "", type: "uint256" }],
+    stateMutability: "view",
     type: "function"
   },
   {
@@ -19,6 +20,7 @@ const TRC20_ABI = [
     ],
     name: "transfer",
     outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
     type: "function"
   }
 ] as const;

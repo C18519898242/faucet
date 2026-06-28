@@ -68,6 +68,32 @@ describe("TronAdapter", () => {
     await expect(adapter.transferToken(token, "TReceiverAddress", "10000")).resolves.toBe("trontx");
   });
 
+  it("passes TronWeb ABI entries with state mutability", async () => {
+    const adapter = new TronAdapter(
+      {
+        address: {
+          fromPrivateKey: () => "TFaucetAddress"
+        },
+        contract: async (abi: unknown) => {
+          expect(abi).toEqual(
+            expect.arrayContaining([
+              expect.objectContaining({ name: "balanceOf", stateMutability: "view" }),
+              expect.objectContaining({ name: "transfer", stateMutability: "nonpayable" })
+            ])
+          );
+          return {
+            balanceOf: () => ({ call: async () => "0" }),
+            transfer: () => ({ send: async () => "tx" })
+          };
+        },
+        isAddress: (address: string) => address.startsWith("T")
+      },
+      "abcdef"
+    );
+
+    await adapter.transferToken(token, "TReceiverAddress", "10000");
+  });
+
   it("builds Shasta explorer transaction URL", () => {
     const adapter = createAdapter({
       balanceOf: () => ({ call: async () => "0" }),
