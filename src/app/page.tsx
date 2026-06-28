@@ -26,6 +26,21 @@ const explorerText: Record<NetworkId, string> = {
   tron: "查看 TRON 交易"
 };
 
+const thirdPartyFaucets = [
+  { name: "Alchemy", url: "https://www.alchemy.com/faucets/ethereum-sepolia" },
+  { name: "Bitcoin testnet3", url: "https://coinfaucet.eu/en/btc-testnet/" },
+  { name: "Bitcoin testnet4", url: "https://coinfaucet.eu/en/btc-testnet4/" },
+  { name: "Chainlink", url: "https://faucets.chain.link/" },
+  { name: "LearnWeb3", url: "https://learnweb3.io/faucets/sepolia/" },
+  {
+    name: "Plasma Testnet",
+    url: "https://faucet.quicknode.com/plasma/testnet/bonus?wallet=0xc8fc3934380f28C176E5227A9ebAaEFD87d85eC9"
+  },
+  { name: "QuickNode", url: "https://faucet.quicknode.com/" },
+  { name: "Stable", url: "https://faucet.stable.xyz/faucet" },
+  { name: "Circle", url: "https://faucet.circle.com/" }
+];
+
 export default function HomePage() {
   const [wallet, setWallet] = useState("");
   const [network, setNetwork] = useState<NetworkId>("sepolia");
@@ -135,6 +150,20 @@ export default function HomePage() {
             {status === "submitting" ? "提交中" : "领取测试币"}
           </button>
         </form>
+
+        <section className="external-faucets" aria-labelledby="external-faucets-title">
+          <div className="external-faucets-header">
+            <h2 id="external-faucets-title">第三方公用水龙头</h2>
+            <p>当前水龙头不可用时，可以试试这些公开入口。</p>
+          </div>
+          <div className="external-faucet-list">
+            {thirdPartyFaucets.map((faucet) => (
+              <a key={faucet.url} href={faucet.url} target="_blank" rel="noreferrer">
+                {faucet.name}
+              </a>
+            ))}
+          </div>
+        </section>
 
         {result && (
           <div className={result.status === "sent" ? "notice success" : "notice error"}>
