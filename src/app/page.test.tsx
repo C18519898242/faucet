@@ -136,4 +136,17 @@ describe("HomePage", () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await screen.findByText("钱包地址格式不正确")).toBeInTheDocument();
   });
+
+  it("shows third-party public faucet links from the bookmark folder", () => {
+    render(<HomePage />);
+
+    expect(screen.getByRole("heading", { name: "第三方公用水龙头" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Alchemy" })).toHaveAttribute(
+      "href",
+      "https://www.alchemy.com/faucets/ethereum-sepolia"
+    );
+    expect(screen.getByRole("link", { name: "Chainlink" })).toHaveAttribute("href", "https://faucets.chain.link/");
+    expect(screen.getByRole("link", { name: "QuickNode" })).toHaveAttribute("href", "https://faucet.quicknode.com/");
+    expect(screen.getByRole("link", { name: "Circle" })).toHaveAttribute("target", "_blank");
+  });
 });

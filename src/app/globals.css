@@ -155,6 +155,54 @@ h1 {
   opacity: 0.7;
 }
 
+.external-faucets {
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dfe4ec;
+  border-radius: 6px;
+  padding: 16px;
+  background: #fbfcfe;
+}
+
+.external-faucets-header {
+  display: grid;
+  gap: 4px;
+}
+
+.external-faucets h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.external-faucets p {
+  margin: 0;
+  color: #596170;
+  font-size: 14px;
+}
+
+.external-faucet-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.external-faucet-list a {
+  border: 1px solid #c9d1df;
+  border-radius: 6px;
+  color: #3157a4;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.external-faucet-list a:focus,
+.external-faucet-list a:hover {
+  border-color: #3157a4;
+  background: #eef4ff;
+}
+
 .notice {
   display: flex;
   align-items: center;
