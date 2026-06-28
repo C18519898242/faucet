@@ -30,15 +30,16 @@ export function migrateDatabase(db: Database.Database): void {
       tx_hash TEXT,
       error_message TEXT,
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL,
-      UNIQUE(wallet, network, token, claim_date)
+      updated_at TEXT NOT NULL
     );
   `);
 
   const columns = db.prepare("PRAGMA table_info(claims)").all() as Array<{ name: string }>;
   const hasNetwork = columns.some((column) => column.name === "network");
+  const indexes = db.prepare("PRAGMA index_list(claims)").all() as Array<{ name: string; origin: string }>;
+  const hasTableUniqueConstraint = indexes.some((index) => index.origin === "u");
 
-  if (!hasNetwork) {
+  if (!hasNetwork || hasTableUniqueConstraint) {
     db.exec(`
       CREATE TABLE claims_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,22 +52,39 @@ export function migrateDatabase(db: Database.Database): void {
         tx_hash TEXT,
         error_message TEXT,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL,
-        UNIQUE(wallet, network, token, claim_date)
+        updated_at TEXT NOT NULL
       );
+    `);
 
-      INSERT INTO claims_new (
-        id, wallet, network, token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
-      )
-      SELECT id, wallet, 'sepolia', token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
-      FROM claims;
+    if (hasNetwork) {
+      db.exec(`
+        INSERT INTO claims_new (
+          id, wallet, network, token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+        )
+        SELECT id, wallet, network, token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+        FROM claims;
+      `);
+    } else {
+      db.exec(`
+        INSERT INTO claims_new (
+          id, wallet, network, token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+        )
+        SELECT id, wallet, 'sepolia', token, amount, claim_date, status, tx_hash, error_message, created_at, updated_at
+        FROM claims;
+      `);
+    }
 
+    db.exec(`
       DROP TABLE claims;
       ALTER TABLE claims_new RENAME TO claims;
     `);
   }
 
   db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_claims_active_unique
+      ON claims(wallet, network, token, claim_date)
+      WHERE status IN ('pending', 'sent');
+
     CREATE INDEX IF NOT EXISTS idx_claims_wallet_network_token_date
       ON claims(wallet, network, token, claim_date);
   `);

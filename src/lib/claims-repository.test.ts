@@ -83,6 +83,24 @@ describe("SqliteClaimsRepository", () => {
     expect(found).toBeUndefined();
   });
 
+  it("allows retrying a claim after a failed transfer", () => {
+    const claims = createRepository();
+    const base = {
+      wallet: "TQ6F4gJ72G4qDTKtpGDGppGAMUeGqwsDEu",
+      network: "tron" as const,
+      token: "USDT" as const,
+      amount: "10000",
+      claimDate: "2026-06-26"
+    };
+    const failed = claims.createPendingClaim(base);
+
+    claims.markFailed(failed.id, "transfer_failed");
+    const retry = claims.createPendingClaim(base);
+
+    expect(retry.id).not.toBe(failed.id);
+    expect(retry.status).toBe("pending");
+  });
+
   it("migrates existing claims to sepolia network", () => {
     db = new Database(":memory:");
     db.exec(`
