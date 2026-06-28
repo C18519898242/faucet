@@ -19,7 +19,7 @@ export type NetworkConfig = {
 export const SEPOLIA_CHAIN_ID = 11155111;
 export const MAX_CLAIM_AMOUNT = "10000";
 
-export const NETWORKS = {
+export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   sepolia: {
     id: "sepolia",
     label: "Sepolia",
@@ -55,7 +55,7 @@ export const NETWORKS = {
       }
     }
   }
-} as const satisfies Record<NetworkId, NetworkConfig>;
+};
 
 export const TOKENS = NETWORKS.sepolia.tokens as Record<TokenSymbol, TokenConfig>;
 
