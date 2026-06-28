@@ -31,7 +31,7 @@ describe("HomePage", () => {
         network: "sepolia",
         wallet: "0x000000000000000000000000000000000000dEaD",
         token: "USDT",
-        amount: "10000"
+        amount: "1000"
       })
     });
     expect(await screen.findByText("交易已发送")).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe("HomePage", () => {
           network: "tron",
           wallet: "TQ6F4gJ72G4qDTKtpGDGppGAMUeGqwsDEu",
           token: "USDT",
-          amount: "10000"
+          amount: "1000"
         })
       })
     );

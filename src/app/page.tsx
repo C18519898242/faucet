@@ -34,6 +34,8 @@ export default function HomePage() {
   const [result, setResult] = useState<ClaimResponse | undefined>();
 
   const supportedTokens = useMemo(() => getSupportedTokens(network), [network]);
+  const claimAmount = NETWORKS[network].tokens[token]?.maxClaimAmount ?? "1000";
+  const claimAmountLabel = formatAmountLabel(claimAmount);
 
   useEffect(() => {
     if (!supportedTokens.includes(token)) {
@@ -58,7 +60,7 @@ export default function HomePage() {
       const response = await fetch("/api/claim", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ network, wallet: trimmedWallet, token, amount: "10000" })
+        body: JSON.stringify({ network, wallet: trimmedWallet, token, amount: claimAmount })
       });
       const data = (await response.json()) as ClaimResponse;
       setResult(data);
@@ -78,7 +80,7 @@ export default function HomePage() {
             <span className="app-version">v{packageJson.version}</span>
           </div>
           <h1>测试币接水</h1>
-          <p className="muted">同一个钱包、同一个网络、同一个币种，每天最多领取一次，单次固定 10,000。</p>
+          <p className="muted">同一个钱包、同一个网络、同一个币种，每天最多领取一次，单次固定 {claimAmountLabel}。</p>
         </div>
 
         <form className="form" onSubmit={submitClaim}>
@@ -126,7 +128,7 @@ export default function HomePage() {
 
           <div className="amount-row">
             <span>领取数量</span>
-            <strong>10,000</strong>
+            <strong>{claimAmountLabel}</strong>
           </div>
 
           <button className="claim-button" type="submit" disabled={status === "submitting"}>
@@ -151,4 +153,9 @@ export default function HomePage() {
       </section>
     </main>
   );
+}
+
+function formatAmountLabel(amount: string): string {
+  const numericAmount = Number(amount);
+  return Number.isFinite(numericAmount) ? new Intl.NumberFormat("en-US").format(numericAmount) : amount;
 }

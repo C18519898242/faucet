@@ -10,7 +10,7 @@ describe("validateClaimInput", () => {
       network: "sepolia",
       wallet: evmWallet,
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result.ok).toBe(true);
@@ -19,7 +19,7 @@ describe("validateClaimInput", () => {
         network: "sepolia",
         wallet: evmWallet,
         token: "USDT",
-        amount: "10000"
+        amount: "1000"
       });
     }
   });
@@ -29,7 +29,7 @@ describe("validateClaimInput", () => {
       network: "tron",
       wallet: tronWallet,
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result.ok).toBe(true);
@@ -38,13 +38,13 @@ describe("validateClaimInput", () => {
         network: "tron",
         wallet: tronWallet,
         token: "USDT",
-        amount: "10000"
+        amount: "1000"
       });
     }
   });
 
   it("rejects a missing network", () => {
-    const result = validateClaimInput({ wallet: evmWallet, token: "USDT", amount: "10000" });
+    const result = validateClaimInput({ wallet: evmWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({ ok: false, reason: "unsupported_network" });
   });
@@ -54,7 +54,7 @@ describe("validateClaimInput", () => {
       network: "mainnet",
       wallet: evmWallet,
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result).toEqual({ ok: false, reason: "unsupported_network" });
@@ -65,7 +65,7 @@ describe("validateClaimInput", () => {
       network: "tron",
       wallet: tronWallet,
       token: "USDC",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result).toEqual({ ok: false, reason: "unsupported_token" });
@@ -76,7 +76,7 @@ describe("validateClaimInput", () => {
       network: "tron",
       wallet: evmWallet,
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result).toEqual({ ok: false, reason: "invalid_wallet" });
@@ -87,7 +87,7 @@ describe("validateClaimInput", () => {
       network: "sepolia",
       wallet: tronWallet,
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     });
 
     expect(result).toEqual({ ok: false, reason: "invalid_wallet" });
@@ -98,7 +98,7 @@ describe("validateClaimInput", () => {
       network: "sepolia",
       wallet: evmWallet,
       token: "USDC",
-      amount: "10001"
+      amount: "1001"
     });
 
     expect(result).toEqual({ ok: false, reason: "amount_too_large" });

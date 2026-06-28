@@ -39,7 +39,7 @@ describe("POST /api/claim", () => {
       network: "sepolia",
       wallet: "0x000000000000000000000000000000000000dEaD",
       token: "USDT",
-      amount: "10000"
+      amount: "1000"
     };
     const request = new Request("http://localhost/api/claim", {
       method: "POST",
@@ -63,7 +63,7 @@ describe("POST /api/claim", () => {
         network: "sepolia",
         wallet: "0x000000000000000000000000000000000000dEaD",
         token: "USDT",
-        amount: "10000"
+        amount: "1000"
       })
     });
 

@@ -22,7 +22,7 @@ describe("ClaimService", () => {
   it("sends a valid Sepolia claim through the Sepolia adapter", async () => {
     const ctx = createService();
 
-    const result = await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({
       status: "sent",
@@ -37,7 +37,7 @@ describe("ClaimService", () => {
   it("sends a valid TRON claim through the TRON adapter", async () => {
     const ctx = createService();
 
-    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({
       status: "sent",
@@ -51,18 +51,18 @@ describe("ClaimService", () => {
 
   it("rejects a second claim for the same wallet network token date", async () => {
     const ctx = createService();
-    await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "10000" });
+    await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "1000" });
 
-    const result = await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({ status: "rejected", reason: "already_claimed_today" });
   });
 
   it("allows the same wallet to claim Sepolia USDT and TRON USDT on the same date", async () => {
     const ctx = createService();
-    await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "10000" });
+    await ctx.service.claim({ network: "sepolia", wallet: evmWallet, token: "USDT", amount: "1000" });
 
-    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "1000" });
 
     expect(result.status).toBe("sent");
     expect(ctx.repo.records.map((record) => `${record.network}:${record.token}`)).toEqual(["sepolia:USDT", "tron:USDT"]);
@@ -72,7 +72,7 @@ describe("ClaimService", () => {
     const ctx = createService();
     ctx.tron.balance = 1n;
 
-    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({ status: "rejected", reason: "insufficient_faucet_balance" });
   });
@@ -81,7 +81,7 @@ describe("ClaimService", () => {
     const ctx = createService();
     ctx.tron.transferError = new Error("private key leaked in raw provider error");
 
-    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "10000" });
+    const result = await ctx.service.claim({ network: "tron", wallet: tronWallet, token: "USDT", amount: "1000" });
 
     expect(result).toEqual({ status: "failed", reason: "transfer_failed" });
     expect(ctx.repo.records[0].status).toBe("failed");

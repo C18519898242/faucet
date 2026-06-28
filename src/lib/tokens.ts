@@ -17,7 +17,7 @@ export type NetworkConfig = {
 };
 
 export const SEPOLIA_CHAIN_ID = 11155111;
-export const MAX_CLAIM_AMOUNT = "10000";
+export const MAX_CLAIM_AMOUNT = process.env.MAX_CLAIM_AMOUNT ?? "1000";
 
 export const NETWORKS: Record<NetworkId, NetworkConfig> = {
   sepolia: {
